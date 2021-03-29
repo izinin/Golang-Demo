@@ -2,18 +2,27 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/buger/jsonparser"
 	"github.com/go-resty/resty/v2"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-const port = ":4000"
+const port = ":4200"
 
 // https://catalog.data.gov/dataset/househartford-comittment-2005-to-june-1-2014
 const data_source = "https://data.hartford.gov/api/views/62ub-3292/rows.json?accessType=DOWNLOAD"
+const dsn = "host=db user=postgres password=example dbname=mydemo port=5432 sslmode=disable"
+
+type CustomContext struct {
+	echo.Context
+	db *gorm.DB
+}
 
 func main() {
 
@@ -23,16 +32,25 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+			if err != nil {
+				log.Fatal("cannot connect to dbase: %s", err.Error())
+			}
+			cc := &CustomContext{c, db}
+			return next(cc)
+		}
+	})
 	// Routes
-	e.GET("/", get_data)
+	e.GET("/import", import_db)
 
 	// Start server
 	e.Logger.Fatal(e.Start(port))
 }
 
 // Handler
-func get_data(c echo.Context) error {
+func import_db(c echo.Context) error {
 	// Create a Resty Client
 	client := resty.New()
 
@@ -51,11 +69,11 @@ func get_data(c echo.Context) error {
 
 	fmt.Println(descr)
 
-	items := make([]HousingPrice, 0, 50)
+	cc := c.(*CustomContext)
 	jsonparser.ArrayEach(resp.Body(), func(record []byte, dataType jsonparser.ValueType, offset int, err error) {
-		items = append(items, *newHousingPrice(record))
+		result := cc.db.Create(newHousingPrice(record))
+		fmt.Println(result)
 	}, "data")
-	fmt.Println(items)
 
 	return c.String(http.StatusOK, resp.String())
 }
