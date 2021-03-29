@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/buger/jsonparser"
@@ -52,26 +51,11 @@ func get_data(c echo.Context) error {
 
 	fmt.Println(descr)
 
-	// for data exploration below, there is duplicates in position, this field shall not be used
-	columns := make(map[int64]string)
-	jsonparser.ArrayEach(resp.Body(), func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		name, err := jsonparser.GetString(value, "fieldName")
-		if err != nil {
-			log.Fatal(err)
-		}
-		pos, err := jsonparser.GetInt(value, "position")
-		if err != nil {
-			log.Fatal(err)
-		}
-		columns[pos] = name
-	}, "meta", "view", "columns")
-
-	fmt.Println(columns)
-
-	jsonparser.ArrayEach(resp.Body(), func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		item := newHousingPrice(value)
-		fmt.Println(item)
+	items := make([]HousingPrice, 0, 50)
+	jsonparser.ArrayEach(resp.Body(), func(record []byte, dataType jsonparser.ValueType, offset int, err error) {
+		items = append(items, *newHousingPrice(record))
 	}, "data")
+	fmt.Println(items)
 
 	return c.String(http.StatusOK, resp.String())
 }
