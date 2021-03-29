@@ -69,8 +69,8 @@ func get_data(c echo.Context) error {
 	fmt.Println(columns)
 
 	jsonparser.ArrayEach(resp.Body(), func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		record, err := Unmarshal(value)
-		fmt.Println(record)
+		item := newHousingPrice(value)
+		fmt.Println(item)
 	}, "data")
 
 	return c.String(http.StatusOK, resp.String())
