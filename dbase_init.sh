@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    CREATE USER ${DBUSER} WITH PASSWORD '${DBPASS}';
+    CREATE DATABASE ${DBNAME};
+    GRANT ALL PRIVILEGES ON DATABASE ${DBNAME} TO ${DBUSER};
+EOSQL
+
+PGPASSWORD=${DBPASS} psql -v ON_ERROR_STOP=1 -d ${DBNAME} -U ${DBUSER} -f data/dbase_init.sql

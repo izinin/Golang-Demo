@@ -17,7 +17,7 @@ const port = ":4200"
 
 // https://catalog.data.gov/dataset/househartford-comittment-2005-to-june-1-2014
 const data_source = "https://data.hartford.gov/api/views/62ub-3292/rows.json?accessType=DOWNLOAD"
-const dsn = "host=db user=postgres password=example dbname=mydemo port=5432 sslmode=disable"
+const dsn = "host=db user=dbuser password=pass dbname=demo port=5432 sslmode=disable"
 
 type CustomContext struct {
 	echo.Context

@@ -6,4 +6,11 @@ the app consumes a JSON payload from https://www.data.gov/, populates a database
 ## run application
 
 * docker-compose up
-* ssh to backend machine
+* ssh to 'backend' conainer
+* inside the conainer:
+
+```
+cd src/backend/
+go run .
+```
+
