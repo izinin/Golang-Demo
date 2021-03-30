@@ -18,6 +18,8 @@ services:
         env_file:
             - local.env
         restart: always
+        ports:
+            - 5432:5432
 
     adminer:
         container_name: adminer

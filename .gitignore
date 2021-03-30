@@ -15,3 +15,4 @@
 # vendor/
 components/backend/__debug_bin
 .vscode/
+components/backend/Golang-Demo
